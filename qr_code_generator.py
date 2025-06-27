@@ -26,3 +26,20 @@ class StyledQRCode(QRCodeGenerator):
     ) -> None:
         super().__init__(content, filename)
         self.fg_color, self.bg_color = fg_color, bg_color
+
+# override generate method
+    def generate(self) -> Path:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,  # 30 % EC
+            box_size=10,
+            border=4,
+        )
+        # access mangled names from parent to keep data encapsulated
+        qr.add_data(self._QRCodeGenerator__content)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color=self.fg_color, back_color=self.bg_color)
+        out_path = Path(self._QRCodeGenerator__filename).with_suffix(".png")
+        img.save(out_path)
+        return out_path
